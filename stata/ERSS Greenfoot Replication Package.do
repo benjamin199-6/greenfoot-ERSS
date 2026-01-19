@@ -1,0 +1,442 @@
+****************************************************
+* GREENFOOT PROJECT – Football Stadium WTP Analysis
+* Author: Benjamin Kirchler
+* Purpose: Replicate ordered logit analysis of
+*          willingness to contribute (WTP_Category)
+*          among respondents shown the football stadium scenario.
+* Date: YYYY-MM-DD
+****************************************************
+
+clear all
+set more off
+
+
+* Set working directory
+use "I:\Projekte\GREENFOOT - WV0191\Durchführungsphase\WP 2 Crowdfunding participation\D2.2 Optimal investment options & survey\Daten\greenfoot_dataV1.dta", clear
+
+tab CHOIX
+*Delete males 
+keep if Q1p2 != 3 
+* Combine Q4p1 and Q5p1 for likelihood to participate
+egen LTP_combined = rowtotal(Q4p1 Q5p1)
+
+* Willingness to participate (WTP) variables
+gen WTP = Q6p3
+tab WTP
+
+* Convert Q6p3 (ParticipationAmount) 
+tab WTP
+* Step 1: Create numeric midpoint values (WTP)
+
+
+replace WTP = 0      if Q6p3 == 1
+replace WTP = 30     if Q6p3 == 2
+replace WTP = 75     if Q6p3 == 3
+replace WTP = 200    if Q6p3 == 4
+replace WTP = 400    if Q6p3 == 5
+replace WTP = 750    if Q6p3 == 6
+replace WTP = 3000   if Q6p3 == 7
+replace WTP = 7500   if Q6p3 == 8
+replace WTP = 15000  if Q6p3 == 9
+
+label var WTP "Estimated contribution midpoint"
+tab WTP
+* Step 2: Create grouped categories (None, Low, Medium, High, Very high)
+gen WTP_Category = .
+replace WTP_Category = 1 if Q6p3 == 1
+replace WTP_Category = 2 if inlist(Q6p3, 2, 3)
+replace WTP_Category = 3 if inlist(Q6p3, 4, 5)
+replace WTP_Category = 4 if inlist(Q6p3, 6, 7)
+replace WTP_Category = 5 if inlist(Q6p3, 8, 9)
+
+tab WTP_Category
+
+
+* Step 3: Add descriptive labels
+label define WTP_lbl 1 "None" 2 "Low" 3 "Medium" 4 "High" 5 "Very high"
+label values WTP_Category WTP_lbl
+label var WTP_Category "Contribution amount category"
+
+* Step 4: Inspect results
+
+*
+** create indp vars **
+*age
+gen age18_24 = 0
+gen age25_34 = 0
+gen age35_44 = 0
+gen age45_54 = 0
+gen age55_64 = 0
+gen age65_74 = 0
+gen age_gt75 = 0
+
+replace age18_24 = 1 if Q1p1 ==1
+replace age25_34 = 1 if Q1p1 ==2
+replace age35_44 = 1 if Q1p1 ==3
+replace age45_54 = 1 if Q1p1 ==4
+replace age55_64 = 1 if Q1p1 ==5
+replace age65_74 = 1 if Q1p1 ==6
+replace age_gt75 = 1  if Q1p1 ==7
+
+* Income groups
+gen income_lt30k = Q1p6 == 1
+gen income30k_40k = Q1p6 == 2
+gen income40k_55k = Q1p6 == 3
+gen income_gt55k = Q1p6 == 4
+
+* Employment status
+gen employed = inlist(Q1p3, 1, 2, 3)
+
+* Gender
+gen male = Q1p2 == 2
+label var male "=1 if respondent is a male"
+
+gen treated = 1 if CHOIX ==2
+replace treated = 0 if CHOIX ==1
+
+tab treated
+* Country labels
+gen country = PAYS
+label define countryl 1 "France" 2 "Ireland" 3 "Sweden" 4 "Azerbaijan"
+label values country countryl
+
+* Fan variables
+gen fan_no = inlist(Q1p8, 1, 2)
+gen fan_indf = Q1p8 == 3
+gen fan_yes = inlist(Q1p8, 4, 5)
+label var fan_no "=1 if person is not interested in professional football"
+label var fan_indf "=1 if person feels indifferent about professional football"
+label var fan_yes "=1 if person is interested or very interested in professional football"
+
+
+* Environment concern
+gen envirpro_no = inlist(Q2p1, 1, 2)
+gen envirpro_indf = Q2p1 == 3
+gen envirpro_yes = inlist(Q2p1, 4, 5)
+
+label var envirpro_no "=1 if person is not concerned about climate change"
+label var envirpro_indf "=1 if person feels indifferent about climate change"
+label var envirpro_yes "=1 if person is concerned or very concerned about climate change"
+
+* Crowdfunding familiarity
+gen crowdfunding = inlist(Q3p1, 1, 2)
+label var crowdfunding "=1 if person is familiar with crowdfunding"
+
+
+* General fan * football treatment
+gen treat_genfan = (treated == 1 & fan_yes == 1)
+
+* Define global macros for variables
+global demoVars "i.age25_34 i.age35_44 i.age45_54 i.age55_64 i.age65_74 i.age_gt75 i.male i.employed i.income30k_40k i.income40k_55k i.income_gt55k"
+
+
+
+table treat_genfan
+tab WTP_Category
+****************************************************
+*  FINAL MODEL REPLICATION - GREENFOOT WTP CATEGORY *
+****************************************************
+
+* (You already cleaned the data and created variables above)
+* Just ensure WTP_Category is properly defined from Q6p3 before running models.
+
+
+****************************************************
+* Overall model with interactions + controls
+****************************************************
+	
+ologit LTP_combined ///
+    treated fan_yes envirpro_yes crowdfunding ///
+    i.treat_genfan ///
+    i.country ///
+    $demoVars, vce(robust)
+
+est store overall
+
+margins, dydx(*) post
+
+* Display results as in paper
+esttab overall, se star(* 0.10 ** 0.05 *** 0.01) label b(3) se(3) ar2 stats(N chi2 ll r2_p, fmt(0 2 2 3) labels("Observations" "Wald χ²" "Log pseudolikelihood" "Pseudo R²"))
+
+
+
+
+
+
+margins fan_yes#treated, predict(outcome(.))
+marginsplot, ///
+    title("Predicted probability of LTP by fan status and treatment") ///
+    ytitle("Predicted probability") ///
+    xtitle("Football Fan × Treatment") ///
+    noci scheme(s1mono)
+****************************************************
+* Country-specific models
+****************************************************
+
+levelsof country, local(countries)
+foreach c of local countries {
+    di "---- Running country = `c' ----"
+    ologit LTP_combined ///
+        treated fan_yes envirpro_yes crowdfunding ///
+        i.treat_genfan ///
+        $demoVars if country == `c', vce(robust)
+    est store country`c'
+}
+
+****************************************************
+* Export results side-by-side
+****************************************************
+esttab overall country1 country2 country3 country4 ///
+    using "I:\Projekte\GREENFOOT - WV0191\Durchführungsphase\WP 2 Crowdfunding participation\D2.2 Optimal investment options & survey\Results\ologit_table.rtf", ///
+    se star(* 0.10 ** 0.05 *** 0.01) label b(3) se(3) ///
+    stats(N chi2 ll r2_p, fmt(0 2 2 3) labels("Observations" "Wald χ²" "Log pseudolikelihood" "Pseudo R²")) replace
+
+
+
+*** APPENDIX 
+
+****************************************************
+* 1️⃣ Ordered Logit Model
+****************************************************
+ologit LTP_combined ///
+    treated fan_yes c.treated#c.fan_yes ///
+    envirpro_yes crowdfunding ///
+    i.country ///
+    $demoVars, vce(robust)
+
+est store ologit_LTP
+
+****************************************************
+* 2️⃣ Generalized Ordered Logit Model
+* Requires the gologit2 package
+****************************************************
+capture which gologit2
+if _rc ssc install gologit2
+
+gologit2 LTP_combined ///
+    treated fan_yes c.treated#c.fan_yes ///
+    envirpro_yes crowdfunding ///
+    i.country ///
+    $demoVars, vce(robust) autofit
+
+est store gologit_LTP
+
+****************************************************
+* 3️⃣ Export results
+****************************************************
+esttab ologit_LTP gologit_LTP ///
+    using "I:\Projekte\GREENFOOT - WV0191\Durchführungsphase\WP 2 Crowdfunding participation\D2.2 Optimal investment options & survey\Results\LTP_models.rtf", ///
+    se star(* 0.10 ** 0.05 *** 0.01) label b(4) se(4) ///
+    stats(N chi2 ll r2_p, fmt(0 2 2 3) labels("Observations" "Wald χ²" "Log pseudolikelihood" "Pseudo R²")) replace	
+	
+
+
+
+
+
+
+
+*WTP 
+
+* Keep only participants who saw the football building scenario
+keep if CHOIX == 2
+
+
+// raw data used for the analyis 
+tab Q6p1 //Q6.1 Suppose that you have spent €1000 fee to participate in this crowdfunding c
+tab Q6p2 // Q6.2. If you could really join this crowdfunding campaign and get the reward opt --- 
+tab Q6p3 //Now, given your personal situation, about what is the amount of participati --> WTP and WPT Category 
+
+* Inspect data
+tab WTP_Category fan_yes, col
+
+* Define global macro for demographic controls
+global demoVars "i.age25_34 i.age35_44 i.age45_54 i.age55_64 i.age65_74 i.age_gt75 i.male i.employed i.income30k_40k i.income40k_55k i.income_gt55k"
+
+*---------------------------------------------------*
+* 3. Ordered logit model
+*---------------------------------------------------*
+* Dependent variable: WTP_Category (None → Very high)
+* Main predictor: football fan status
+* Covariates: demographics, environmental concern, crowdfunding familiarity, country FE
+
+ologit WTP_Category i.fan_yes ///
+       i.envirpro_yes i.crowdfunding i.country ///
+       $demoVars, vce(robust)
+
+est store ologit_WTP
+tab WTP_Category
+*---------------------------------------------------*
+* 4. Marginal effects
+*---------------------------------------------------*
+
+* Average marginal effect of being a football fan on each outcome
+margins, dydx(fan_yes) predict(outcome(#5))
+
+
+*---------------------------------------------------*
+* 3. Define reward options clearly (Q6p1)
+*------------
+gen reward = Q6p1
+label define reward_lbl  ///
+    1 "€1200 payback after 5 years" ///
+    2 "€1100 payback + World Cup jersey" ///
+    3 "€1000 payback + Tesla lottery entry" ///
+    4 "Free electricity for one year" ///
+    5 "20% discount on solar roof" ///
+    6 "4 training tickets at Clairefontaine"
+label values reward reward_lbl
+label var reward "Preferred reward type (Q6p1)"
+
+tab reward fan_yes, col
+
+*---------------------------------------------------*
+* 4. Model 1: Reward preference
+*---------------------------------------------------*
+mlogit reward i.fan_yes i.envirpro_yes i.crowdfunding i.country ///
+        $demoVars, baseoutcome(1) vce(robust)
+
+est store mlogit_rewards
+
+* Marginal effects for being a fan
+margins, dydx(fan_yes)
+
+
+marginsplot, ///
+    title("Effect of being a football fan on reward preference") ///
+    xtitle("Reward type") ///
+    ytitle("Marginal effect") ///
+    xlabel(1 "€1200" 2 "€1100+Jersey" 3 "Tesla" 4 "Electricity" 5 "Solar roof" 6 "Training") ///
+    scheme(s1mono)
+graph export "...\Results\fan_reward_effects.png", replace width(2000)
+
+
+
+*---------------------------------------------------*
+* Define likelihood to participate (Q6p2)
+*---------------------------------------------------*
+gen LTP_FOOTBALL = Q6p2
+label define LTP_lbl ///
+    1 "Very unlikely to participate" ///
+    2 "Unlikely to participate" ///
+    3 "Neither likely nor unlikely" ///
+    4 "Likely to participate" ///
+    5 "Very likely to participate"
+label values LTP_FOOTBALL LTP_lbl
+label var LTP_FOOTBALL "Likelihood to participate in football crowdfunding (Q6p2)"
+
+tab LTP_FOOTBALL fan_yes, col
+//------------------------------------------*
+* 5. Model 2: Likelihood to participate (Q6p2)
+*---------------------------------------------------*
+ologit LTP_FOOTBALL i.reward##i.fan_yes ///
+       i.envirpro_yes i.crowdfunding i.country ///
+       $demoVars, vce(robust)
+
+est store ologit_likelihood
+
+
+*---------------------------------------------------*
+* 6. Model 3: Contribution level (Q6p3) WTC
+*---------------------------------------------------*
+
+ologit WTP_Category i.reward i.Q6p2 i.fan_yes ///
+       i.envirpro_yes i.crowdfunding i.country ///
+       $demoVars, vce(robust)
+est store ologit_WTP
+
+* Marginal effects of fan status on "very high" contributions
+margins fan_yes, predict(outcome())
+marginsplot, ///
+    recast(bar) ///
+    ylabel(0(0.05)0.25, format(%3.2f)) ///
+    ytitle("Predicted Pr(Very High Contribution)") ///
+    xlabel(0 "Non-fans" 1 "Fans") ///
+    title("Fan identity and contribution level") ///
+    scheme(s1mono)
+
+
+*---------------------------------------------------*
+* Marginal predicted probabilities for ALL outcomes
+*---------------------------------------------------*
+
+
+* Predicted probabilities of each WTP category for fans vs. non-fans
+margins fan_yes, predict(outcome(1)) predict(outcome(2)) ///
+                predict(outcome(3)) predict(outcome(4)) ///
+                predict(outcome(5))
+
+
+* Store results in a long format for visualization
+marginsplot, ///
+    recast(line) recastci(rarea) ///
+    by(fan_yes, title("Football Fan = #")) ///
+    xlabel(1 "None" 2 "Low" 3 "Medium" 4 "High" 5 "Very High") ///
+  
+
+
+///// 
+
+mlogit reward i.fan_yes i.envirpro_yes i.crowdfunding i.country $demoVars
+
+	
+predict p_reward*, pr
+ologit LTP_FOOTBALL i.fan_yes p_reward1-p_reward6 i.envirpro_yes i.crowdfunding i.country $demoVars
+
+	
+predict phat_LTP
+ologit WTP_Category i.fan_yes phat_LTP i.envirpro_yes i.crowdfunding i.country $demoVars
+
+	
+	
+ssc install cmp
+describe reward LTP_FOOTBALL WTP_Category
+tab reward
+tab LTP_FOOTBALL
+tab WTP_Category
+	
+	
+* Make clean versions
+recode reward (1/6 = 0/5), gen(reward_cmp)
+recode LTP_FOOTBALL (1/5 = 0/4), gen(LTP_cmp)
+recode WTP_Category (1/5 = 0/4), gen(WTP_cmp)
+
+
+
+cmp setup
+
+cmp (LTP_FOOTBALL = i.fan_yes i.crowdfunding i.envirpro_yes i.male i.employed i.country  ) ///
+    (WTP_Category = i.fan_yes i.crowdfunding i.envirpro_yes i.male i.employed i.country ), ///
+    indicators($cmp_oprobit $cmp_oprobit)
+
+margins, dydx(fan_yes) predict(eq(LTP_FOOTBALL))
+margins, dydx(fan_yes) predict(eq(WTP_Category))
+
+
+margins fan_yes, predict(outcome(5) eq(LTP_FOOTBALL))
+margins fan_yes, predict(outcome(5) eq(WTP_Category))
+
+
+margins fan_yes, predict(outcome(5) eq(WTP_Category))
+marginsplot, recast(bar) ytitle("Pr(Very high contribution)") ///
+  xlabel(0 "Non-fans" 1 "Fans") scheme(s1mono)
+  
+  
+  
+*---------------------------------------------------------*
+* Recursive CMP: Participation (LTP) → Contribution (WTP) *
+*---------------------------------------------------------*
+
+cmp setup
+
+* Step 1: First equation - Likelihood to participate
+* Step 2: Second equation - Contribution amount, includes predicted LTP
+
+cmp (LTP_FOOTBALL = i.fan_yes i.male i.employed i.envirpro_yes i.crowdfunding i.country) ///
+    (WTP_Category = i.fan_yes LTP_FOOTBALL i.male i.employed i.envirpro_yes i.crowdfunding i.country), ///
+    indicators($cmp_oprobit $cmp_oprobit)  
+	
+	
+margins, dydx(LTP_FOOTBALL) predict(eq(WTP_Category))
+margins LTP_FOOTBALL, predict(outcome(5) eq(WTP_Category))
+marginsplot, recast(bar) ytitle("Pr(Very high contribution)") scheme(s1mono)	

@@ -1,0 +1,7 @@
+
+	Wilcoxon rank sum test with continuity correction
+
+data:  WTP_num by Fan
+W = 282631, p-value <0.0000000000000002
+alternative hypothesis: true location shift is not equal to 0
+

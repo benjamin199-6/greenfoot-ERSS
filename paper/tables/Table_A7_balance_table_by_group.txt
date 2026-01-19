@@ -1,0 +1,90 @@
+                                     Stratified by Treatment
+                                      Football     Neutral      p      test
+  n                                   1780         1782                    
+  AgeGroup (%)                                                   0.003     
+     1                                 189 (10.6)   168 ( 9.4)             
+     2                                 350 (19.7)   287 (16.1)             
+     3                                 339 (19.0)   309 (17.3)             
+     4                                 301 (16.9)   325 (18.2)             
+     5                                 271 (15.2)   284 (15.9)             
+     6                                 195 (11.0)   256 (14.4)             
+     7                                 135 ( 7.6)   153 ( 8.6)             
+  Gender = 2 (%)                       814 (45.7)   837 (47.0)   0.479     
+  EmploymentStatus (%)                                           0.029     
+     1                                 774 (43.5)   763 (42.8)             
+     2                                 201 (11.3)   187 (10.5)             
+     3                                 125 ( 7.0)    85 ( 4.8)             
+     4                                 338 (19.0)   403 (22.6)             
+     5                                 191 (10.7)   187 (10.5)             
+     6                                  88 ( 4.9)    93 ( 5.2)             
+     7                                  63 ( 3.5)    64 ( 3.6)             
+  AnnualNetIncome (%)                                            0.153     
+     1                                 548 (30.8)   500 (28.1)             
+     2                                 466 (26.2)   459 (25.8)             
+     3                                 370 (20.8)   418 (23.5)             
+     4                                 396 (22.2)   405 (22.7)             
+  EnvConcernEnergyChoices (mean (SD)) 3.40 (0.98)  3.43 (0.95)   0.414     
+  ReducedElectricityUse (mean (SD))   0.54 (0.50)  0.54 (0.50)   0.790     
+  SustainableTravel (mean (SD))       0.33 (0.47)  0.32 (0.47)   0.483     
+  LessIntensiveDiet (mean (SD))       0.31 (0.46)  0.32 (0.47)   0.483     
+  CrowdfundingReturnPreference (%)                               0.407     
+     1                                 494 (27.8)   503 (28.2)             
+     2                                 154 ( 8.7)   157 ( 8.8)             
+     3                                 228 (12.8)   190 (10.7)             
+     4                                 147 ( 8.3)   134 ( 7.5)             
+     5                                 292 (16.4)   322 (18.1)             
+     6                                 134 ( 7.5)   146 ( 8.2)             
+     7                                 331 (18.6)   330 (18.5)             
+  MainParticipationReason (%)                                    0.286     
+     1                                 175 ( 9.8)   176 ( 9.9)             
+     2                                  77 ( 4.3)    64 ( 3.6)             
+     3                                 273 (15.3)   261 (14.6)             
+     4                                 158 ( 8.9)   125 ( 7.0)             
+     5                                 412 (23.1)   439 (24.6)             
+     6                                 371 (20.8)   375 (21.0)             
+     7                                 314 (17.6)   342 (19.2)             
+                                     Stratified by Treatment
+                                      SMD   
+  n                                         
+  AgeGroup (%)                         0.148
+     1                                      
+     2                                      
+     3                                      
+     4                                      
+     5                                      
+     6                                      
+     7                                      
+  Gender = 2 (%)                       0.025
+  EmploymentStatus (%)                 0.126
+     1                                      
+     2                                      
+     3                                      
+     4                                      
+     5                                      
+     6                                      
+     7                                      
+  AnnualNetIncome (%)                  0.077
+     1                                      
+     2                                      
+     3                                      
+     4                                      
+  EnvConcernEnergyChoices (mean (SD))  0.027
+  ReducedElectricityUse (mean (SD))    0.009
+  SustainableTravel (mean (SD))        0.024
+  LessIntensiveDiet (mean (SD))        0.023
+  CrowdfundingReturnPreference (%)     0.083
+     1                                      
+     2                                      
+     3                                      
+     4                                      
+     5                                      
+     6                                      
+     7                                      
+  MainParticipationReason (%)          0.091
+     1                                      
+     2                                      
+     3                                      
+     4                                      
+     5                                      
+     6                                      
+     7                                      

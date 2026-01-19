@@ -22,7 +22,7 @@ if (!file.exists(raw_file)) {
 # 2. Load raw data (SPSS .sav) into object 'data'
 # ---------------------------------------------------------------------------
 data <- haven::read_sav(raw_file)
-
+sjPlot::view_df(data)
 # ---------------------------------------------------------------------------
 # 3. Rename variables (1:1 from your submitted script)
 # ---------------------------------------------------------------------------
@@ -108,7 +108,8 @@ data <- data %>%
     WouldJoinWithPreferredReward = Q6.2,
     ParticipationAmount = Q6.3,
     InterestOptionPlain = Q6.4A,
-    InterestOptionLottery = Q6.4B
+    InterestOptionLottery = Q6.4B,
+    LTP_national_campaing= Q6.2
   )
 
 # ---------------------------------------------------------------------------

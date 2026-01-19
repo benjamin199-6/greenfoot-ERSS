@@ -18,16 +18,21 @@ message("Running 00_setup.R ...")
 # ---------------------------------------------------------------------------
 rm(list = ls())
 gc()
-getwd()
+
 # ---------------------------------------------------------------------------
 # 2. Required packages
 # ---------------------------------------------------------------------------
 required_packages <- c(
+  "haven",
+  "sjPlot",
+  "sjlabelled",
   "tidyverse",
+  "fastDummies",
+  "tableone",
   "here",
   "janitor",
-  "fixest",
-  "readr"
+  "readr",
+  "wesanderson"
 )
 
 installed <- rownames(installed.packages())
@@ -43,7 +48,7 @@ invisible(lapply(required_packages, library, character.only = TRUE))
 # 3. Global options
 # ---------------------------------------------------------------------------
 options(
-  scipen = 999,      # avoid scientific notation
+  scipen = 999,
   digits = 4
 )
 
@@ -57,14 +62,18 @@ paths <- list(
   data_processed = here::here("data", "processed"),
   output_tables  = here::here("paper", "tables"),
   output_figures = here::here("paper", "figures"),
-  output_models  = here::here("output", "models")
+  output_models  = here::here("output", "models"),
+  output_logs    = here::here("output", "logs"),
+  stata          = here::here("stata")
 )
 
 # Create folders if they do not exist
-dir.create(paths$data_processed, showWarnings = F, recursive = TRUE)
+dir.create(paths$data_processed, showWarnings = FALSE, recursive = TRUE)
 dir.create(paths$output_tables, showWarnings = FALSE, recursive = TRUE)
 dir.create(paths$output_figures, showWarnings = FALSE, recursive = TRUE)
 dir.create(paths$output_models, showWarnings = FALSE, recursive = TRUE)
+dir.create(paths$output_logs, showWarnings = FALSE, recursive = TRUE)
+dir.create(paths$stata, showWarnings = FALSE, recursive = TRUE)
 
 # ---------------------------------------------------------------------------
 # 5. Sanity checks
